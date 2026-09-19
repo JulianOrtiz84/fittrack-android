@@ -16,3 +16,11 @@
 ```
 
 El panel izquierdo conserva el menú visible; el derecho cambia según la selección.
+
+## Mockups visuales
+
+Los mockups de alta fidelidad conservan la misma navegación de dos paneles definida en la aplicación:
+
+- [Perfil](mockups/fittrack-main-screen.png)
+- [Fotos](mockups/fittrack-photos-screen.png)
+- [Video](mockups/fittrack-video-screen.png)

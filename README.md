@@ -17,5 +17,5 @@ Base Android de la Entrega 1. La app usa Kotlin, Jetpack Compose y dos `Fragment
 
 ## Pendientes
 
-- Conectar el repositorio local con un remoto de GitHub. No hay enlace definitivo ni se publicó ningún repositorio.
-- Crear un mockup visual externo, si la entrega lo solicita. El wireframe local está en `docs/wireframe.md`.
+- Repositorio público: [JulianOrtiz84/fittrack-android](https://github.com/JulianOrtiz84/fittrack-android). Falta completar el primer `push` desde el repositorio local.
+- Los mockups visuales de Perfil, Fotos y Video están en `docs/mockups/`; el wireframe de estructura está en `docs/wireframe.md`.
