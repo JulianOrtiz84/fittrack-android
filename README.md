@@ -17,5 +17,5 @@ Base Android de la Entrega 1. La app usa Kotlin, Jetpack Compose y dos `Fragment
 
 ## Pendientes
 
-- Repositorio público: [JulianOrtiz84/fittrack-android](https://github.com/JulianOrtiz84/fittrack-android). Falta completar el primer `push` desde el repositorio local.
+- Repositorio público y sincronizado: [JulianOrtiz84/fittrack-android](https://github.com/JulianOrtiz84/fittrack-android).
 - Los mockups visuales de Perfil, Fotos y Video están en `docs/mockups/`; el wireframe de estructura está en `docs/wireframe.md`.
