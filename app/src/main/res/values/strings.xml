@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">FitTrack</string>
+    <string name="menu_title">FITTRACK</string>
+    <string name="menu_subtitle">Tu bienestar, en movimiento</string>
+    <string name="section_profile">Perfil</string>
+    <string name="section_photos">Fotos</string>
+    <string name="section_video">Video</string>
+    <string name="section_web">Web</string>
+    <string name="section_buttons">Botones</string>
+</resources>
