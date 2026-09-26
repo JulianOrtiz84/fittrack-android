@@ -1,13 +1,21 @@
 # FitTrack
 
-Base Android de la Entrega 1. La app usa Kotlin, Jetpack Compose y dos `Fragment` reales para una interfaz de dos paneles.
+Aplicación Android desarrollada con Kotlin, Jetpack Compose y dos `Fragment` para una interfaz de dos paneles. La segunda entrega amplía la base inicial con secciones funcionales de perfil, fotos, video, recursos web y acciones.
+
+## Secciones
+
+- **Perfil:** ilustración, información académica y experiencia; permite editar los datos.
+- **Fotos:** consulta una biblioteca ilustrada de ejercicios, toca una para leer su descripción y agrega tus propias imágenes de progreso.
+- **Video:** abre la rutina de cuerpo completo de ATHLEAN-X Español en YouTube o elige un archivo local para reproducirlo en la app con controles multimedia.
+- **Web:** digita una URL y consúltala en una vista integrada; inicia con información en español de la OMS sobre actividad física.
+- **Botones:** registra una nota de bienestar y prueba las acciones Guardar y Cancelar.
 
 ## Estructura
 
-- `MainActivity`: aloja ambos paneles y coordina la selección.
-- `MenuFragment`: panel izquierdo con Perfil, Fotos, Video, Web y Botones.
-- `ContentFragment`: panel derecho que muestra el contenido inicial de la opción activa.
-- `model/FitTrackSection.kt`: catálogo único de las cinco secciones.
+- `MainActivity`: aloja los paneles y coordina la selección.
+- `MenuFragment`: menú lateral para navegar por las cinco secciones.
+- `ContentFragment`: interfaz y estado de las secciones.
+- `model/FitTrackSection.kt`: catálogo de secciones.
 
 ## Abrir y ejecutar
 
@@ -15,7 +23,10 @@ Base Android de la Entrega 1. La app usa Kotlin, Jetpack Compose y dos `Fragment
 2. Esperar la sincronización de Gradle.
 3. Ejecutar la configuración `app` en un emulador o dispositivo Android.
 
-## Pendientes
+La sección Web requiere conexión a Internet. Fotos y Video usan el selector de documentos de Android y no solicitan acceso general al almacenamiento.
 
-- Repositorio público y sincronizado: [JulianOrtiz84/fittrack-android](https://github.com/JulianOrtiz84/fittrack-android).
-- Los mockups visuales de Perfil, Fotos y Video están en `docs/mockups/`; el wireframe de estructura está en `docs/wireframe.md`.
+## Diseño
+
+Los mockups visuales están en `docs/mockups/`; la estructura de navegación se describe en `docs/wireframe.md`.
+
+Repositorio: [JulianOrtiz84/fittrack-android](https://github.com/JulianOrtiz84/fittrack-android).

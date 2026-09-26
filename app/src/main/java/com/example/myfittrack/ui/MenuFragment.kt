@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -26,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -55,9 +57,14 @@ class MenuFragment : Fragment() {
         setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
         setContent {
             MyFitTrackTheme(dynamicColor = false) {
-                MenuPanel(selected) { section ->
+                val onSelected: (FitTrackSection) -> Unit = { section ->
                     selected = section
                     listener?.onSectionSelected(section)
+                }
+                if (LocalConfiguration.current.screenWidthDp < 600) {
+                    CompactMenuPanel(selected, onSelected)
+                } else {
+                    MenuPanel(selected, onSelected)
                 }
             }
         }
@@ -66,6 +73,38 @@ class MenuFragment : Fragment() {
     override fun onDetach() {
         listener = null
         super.onDetach()
+    }
+}
+
+@Composable
+private fun CompactMenuPanel(selected: FitTrackSection, onSelected: (FitTrackSection) -> Unit) {
+    val navy = Color(0xFF14213D)
+    Column(
+        modifier = Modifier.fillMaxSize()
+            .background(navy)
+            .padding(start = 8.dp, end = 8.dp, top = 30.dp, bottom = 10.dp),
+        verticalArrangement = Arrangement.spacedBy(5.dp)
+    ) {
+        Text("FITTRACK", color = Color.White, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleSmall)
+        Text("Bienestar", color = Color(0xFFB9C6DE), style = MaterialTheme.typography.labelSmall)
+        Spacer(Modifier.height(14.dp))
+        FitTrackSection.entries.forEach { section ->
+            val active = section == selected
+            Row(
+                modifier = Modifier.fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(if (active) Color(0xFF2EC4B6) else Color.Transparent)
+                    .clickable { onSelected(section) }
+                    .padding(horizontal = 7.dp, vertical = 12.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(section.emoji, color = Color.White, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.labelMedium)
+                Text(section.label, color = Color.White, fontWeight = if (active) FontWeight.Bold else FontWeight.Medium, style = MaterialTheme.typography.labelMedium, maxLines = 1)
+            }
+        }
+        Spacer(Modifier.weight(1f))
+        Text("Entrega 2", color = Color(0xFF8EA1C1), style = MaterialTheme.typography.labelSmall)
     }
 }
 
@@ -99,6 +138,6 @@ private fun MenuPanel(selected: FitTrackSection, onSelected: (FitTrackSection) -
             }
         }
         Spacer(Modifier.weight(1f))
-        Text("Entrega 1 · Base funcional", color = Color(0xFF8EA1C1), style = MaterialTheme.typography.bodySmall)
+        Text("Entrega 2 · Perfil y bienestar", color = Color(0xFF8EA1C1), style = MaterialTheme.typography.bodySmall)
     }
 }
