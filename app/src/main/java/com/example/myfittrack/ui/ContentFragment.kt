@@ -60,6 +60,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -217,6 +218,7 @@ private fun WebResourcesScreen() {
     val navy = Color(0xFF14213D)
     val muted = Color(0xFF617087)
     val compact = LocalConfiguration.current.screenWidthDp < 600
+    val keyboardController = LocalSoftwareKeyboardController.current
     var webView by remember { mutableStateOf<WebView?>(null) }
     var address by rememberSaveable { mutableStateOf("https://www.who.int/es/news-room/fact-sheets/detail/physical-activity") }
     var isLoading by remember { mutableStateOf(true) }
@@ -246,6 +248,7 @@ private fun WebResourcesScreen() {
                 label = { Text("URL") }
             )
             Button(onClick = {
+                keyboardController?.hide()
                 val target = if (address.startsWith("http://") || address.startsWith("https://")) address else "https://$address"
                 address = target
                 loadError = null
@@ -270,11 +273,11 @@ private fun WebResourcesScreen() {
                             settings.setSupportMultipleWindows(false)
                             webViewClient = object : WebViewClient() {
                                 override fun shouldOverrideUrlLoading(view: WebView, request: android.webkit.WebResourceRequest): Boolean =
-                                    openExternalUrl(context, request.url)
+                                    request.url.scheme !in setOf("http", "https")
 
                                 @Suppress("DEPRECATION")
                                 override fun shouldOverrideUrlLoading(view: WebView, url: String): Boolean =
-                                    openExternalUrl(context, Uri.parse(url))
+                                    Uri.parse(url).scheme !in setOf("http", "https")
 
                                 override fun onPageStarted(view: WebView, url: String, favicon: android.graphics.Bitmap?) {
                                     isLoading = true
@@ -336,18 +339,6 @@ private fun WebResourcesScreen() {
     }
 }
 
-private fun openExternalUrl(context: android.content.Context, target: Uri): Boolean {
-    if (target.scheme !in setOf("http", "https")) return true
-    val host = target.host.orEmpty()
-    if (host == "who.int" || host.endsWith(".who.int")) return false
-    return try {
-        context.startActivity(Intent(Intent.ACTION_VIEW, target))
-        true
-    } catch (_: android.content.ActivityNotFoundException) {
-        true
-    }
-}
-
 @Composable
 private fun VideoScreen(videoUri: String?, onVideoChanged: (String?) -> Unit) {
     val navy = Color(0xFF14213D)
@@ -386,18 +377,36 @@ private fun VideoScreen(videoUri: String?, onVideoChanged: (String?) -> Unit) {
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(if (compact) 12.dp else 16.dp), modifier = Modifier.padding(if (compact) 12.dp else 20.dp)) {
                 if (videoUri == null) {
-                    Column(
-                        modifier = Modifier.fillMaxWidth().height(if (compact) 170.dp else 260.dp)
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(navy)
-                            .padding(24.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Text("▶", color = accent, style = MaterialTheme.typography.displayMedium)
-                        Spacer(Modifier.height(12.dp))
-                        Text("ATHLEAN-X Español", color = Color.White, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-                    }
+                    AndroidView(
+                        factory = { viewContext ->
+                            WebView(viewContext).apply {
+                                settings.javaScriptEnabled = true
+                                settings.domStorageEnabled = true
+                                settings.allowFileAccess = false
+                                settings.allowContentAccess = false
+                                settings.mediaPlaybackRequiresUserGesture = true
+                                webViewClient = object : WebViewClient() {
+                                    override fun shouldOverrideUrlLoading(view: WebView, request: android.webkit.WebResourceRequest): Boolean {
+                                        val host = request.url.host.orEmpty().lowercase()
+                                        val youtubePlayerHost = host == "youtube.com" || host.endsWith(".youtube.com") ||
+                                            host == "youtube-nocookie.com" || host.endsWith(".youtube-nocookie.com") ||
+                                            host == "googlevideo.com" || host.endsWith(".googlevideo.com")
+                                        return !youtubePlayerHost
+                                    }
+                                }
+                                loadUrl(
+                                    "https://www.youtube.com/embed/8V57EbWrDzI?controls=1&playsinline=1&rel=0",
+                                    mapOf("Referer" to "https://${viewContext.packageName}/")
+                                )
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth().height(if (compact) 220.dp else 300.dp)
+                            .clip(RoundedCornerShape(16.dp)),
+                        onRelease = { player ->
+                            player.stopLoading()
+                            player.destroy()
+                        }
+                    )
                 } else {
                     AndroidView(
                         factory = { viewContext ->
@@ -414,7 +423,8 @@ private fun VideoScreen(videoUri: String?, onVideoChanged: (String?) -> Unit) {
                             }
                         },
                         modifier = Modifier.fillMaxWidth().height(if (compact) 170.dp else 260.dp)
-                            .clip(RoundedCornerShape(16.dp))
+                            .clip(RoundedCornerShape(16.dp)),
+                        onRelease = { player -> player.stopPlayback() }
                     )
                 }
                 Text(
@@ -424,19 +434,13 @@ private fun VideoScreen(videoUri: String?, onVideoChanged: (String?) -> Unit) {
                     fontWeight = FontWeight.SemiBold
                 )
                 Text(
-                    if (videoUri == null) "Video de ATHLEAN-X Español. Ábrelo para reproducirlo con sus controles." else "Usa los controles del reproductor para iniciar, pausar o recorrer el video.",
+                    if (videoUri == null) "Reproduce aquí la rutina y usa los controles del reproductor." else "Usa los controles del reproductor para iniciar, pausar o recorrer el video.",
                     color = muted,
                     style = MaterialTheme.typography.bodyMedium
                 )
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    if (videoUri == null) {
-                        Button(
-                            onClick = { openExternalUrl(context, Uri.parse(ATHLEAN_VIDEO_URL)) },
-                            colors = ButtonDefaults.buttonColors(containerColor = accent)
-                        ) { Text("Ver video en YouTube") }
-                    }
                     Button(onClick = chooseVideo, colors = ButtonDefaults.buttonColors(containerColor = if (videoUri == null) navy else accent)) {
-                        Text(if (videoUri == null) "Elegir video del dispositivo" else "Cambiar video")
+                        Text(if (videoUri == null) "Elegir otro video" else "Cambiar video")
                     }
                     if (videoUri != null) {
                         TextButton(onClick = {
@@ -455,8 +459,6 @@ private fun VideoScreen(videoUri: String?, onVideoChanged: (String?) -> Unit) {
     }
 }
 
-private const val ATHLEAN_VIDEO_URL = "https://www.youtube.com/watch?v=8V57EbWrDzI"
-
 private data class ExerciseItem(
     val imageRes: Int,
     val name: String,
@@ -469,7 +471,8 @@ private val EXERCISES = listOf(
     ExerciseItem(R.drawable.exercise_incline_press, "Press inclinado", "Pecho", "En banco inclinado, baja la barra hacia la parte alta del pecho y empuja sin perder el apoyo de los pies."),
     ExerciseItem(R.drawable.exercise_squat, "Sentadilla", "Piernas", "Lleva la cadera atrás y flexiona las rodillas manteniendo la espalda neutra y las rodillas alineadas con los pies."),
     ExerciseItem(R.drawable.exercise_dumbbell_row, "Remo con mancuerna", "Espalda", "Apoya una mano en el banco y lleva la mancuerna hacia la cadera con el torso estable."),
-    ExerciseItem(R.drawable.exercise_plank, "Plancha", "Core", "Apoya antebrazos y puntas de los pies; mantén el cuerpo alineado y el abdomen activo.")
+    ExerciseItem(R.drawable.exercise_plank, "Plancha", "Core", "Apoya antebrazos y puntas de los pies; mantén el cuerpo alineado y el abdomen activo."),
+    ExerciseItem(R.drawable.exercise_shoulder_press, "Press de hombros", "Hombros", "Sentado y con la espalda recta, empuja las mancuernas sobre la cabeza sin bloquear los codos y bájalas con control.")
 )
 
 @Composable
